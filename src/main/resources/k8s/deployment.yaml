@@ -1,0 +1,96 @@
+# Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: viatab-frontend
+  labels:
+    app: viatab-frontend
+spec:
+  replicas: 1  # Number of pods
+  selector:
+    matchLabels:
+      app: viatab-frontend
+  template:
+    metadata:
+      labels:
+        app: viatab-frontend
+    spec:
+      containers:
+        - name: viatab-frontend
+          image: viatab/frontend:latest  # Replace with your actual frontend image name
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80  # Port exposed by the frontend container
+          env:
+            - name: REACT_APP_API_URL
+              value: "http://viatab-backend:8080"  # Backend service URL
+
+---
+
+# Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: viatab-backend
+  labels:
+    app: viatab-backend
+spec:
+  replicas: 1  # Number of pods
+  selector:
+    matchLabels:
+      app: viatab-backend
+  template:
+    metadata:
+      labels:
+        app: viatab-backend
+    spec:
+      containers:
+        - name: viatab-backend
+          image: viatab/backend:latest  # Replace with your backend image
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080  # Port exposed by the backend container
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://viatab-db:5432/assignment-db"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "postgres"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "postgres"
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+            - name: SPRING_JPA_HIBERNATE_SHOW_SQL
+              value: "true"
+
+---
+
+# Database Deployment (PostgreSQL)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: viatab-db
+  labels:
+    app: viatab-db
+spec:
+  replicas: 1  # Number of pods
+  selector:
+    matchLabels:
+      app: viatab-db
+  template:
+    metadata:
+      labels:
+        app: viatab-db
+    spec:
+      containers:
+        - name: viatab-db
+          image: postgres:14.1-alpine  # PostgreSQL image
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 5432  # Port exposed by the PostgreSQL container
+          env:
+            - name: POSTGRES_DB
+              value: "assignment-db"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              value: "postgres"

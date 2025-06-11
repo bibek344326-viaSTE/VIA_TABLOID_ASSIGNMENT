@@ -1,0 +1,52 @@
+services:
+  db:
+    image: "postgres:14.1-alpine"
+    restart: always
+    container_name: "VIA_TABLOID_DB"
+    ports:
+      - "5432:5432"   
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=assignment-db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  backend:
+    image: "backend/spring-app:latest"
+    build:
+      context: ./
+    container_name: "VIA_TABLOID_BACKEND"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - spring.datasource.url=jdbc:postgresql://db:5432/assignment-db  # connect to db service on 5432
+      - spring.datasource.username=postgres
+      - spring.datasource.password=postgres
+      - spring.jpa.hibernate.show-sql=true
+      - spring.jpa.hibernate.ddl-auto=update
+
+  frontend:
+    build:
+      context: ./viatab-frontend
+    container_name: "VIA_TABLOID_FRONTEND"
+    ports:
+      - "8090:8090"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:9090   # use backend service hostname, not localhost
+    volumes:
+      - ./viatab-frontend:/app
+volumes:
+  db:
+    driver: local
+  frontend:
+    driver: local
+networks:
+  default:
+    driver: bridge
+    name: viatabloid_network
+    attachable: true

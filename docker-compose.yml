@@ -13,7 +13,6 @@ services:
       - POSTGRES_PASSWORD=postgres
 
   backend:
-    image: "backend/spring-app:latest"
     build:
       context: ./
     container_name: "VIA_TABLOID_BACKEND"
@@ -37,16 +36,9 @@ services:
     depends_on:
       - backend
     environment:
-      - REACT_APP_API_URL=http://localhost:9090   # use backend service hostname, not localhost
+      - REACT_APP_API_URL=http://backend:8080   # connect to backend service on 9090
     volumes:
       - ./viatab-frontend:/app
 volumes:
   db:
     driver: local
-  frontend:
-    driver: local
-networks:
-  default:
-    driver: bridge
-    name: viatabloid_network
-    attachable: true

@@ -1,7 +1,10 @@
-# Use Java 21 LTS
-ARG VARIANT=21
-FROM mcr.microsoft.com/devcontainers/java:${VARIANT}
+FROM maven:3.9.9-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Install Maven
-ARG MAVEN_VERSION="3.9.9"
-RUN su vscode -c "source /usr/local/sdkman/bin/sdkman-init.sh && sdk install maven \"${MAVEN_VERSION}\""
+FROM openjdk:21-jdk-slim
+COPY --from=build /app/target/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "/app.jar"]
